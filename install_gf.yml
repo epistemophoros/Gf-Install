@@ -1,0 +1,46 @@
+- hosts: scanners
+  become: yes
+
+ 
+
+  tasks:
+  - name: check go version
+    command: go version
+    register: result
+    changed_when: no
+    ignore_errors: true
+
+
+  - name: go get gogs
+    shell: go install github.com/tomnomnom/gf@latest
+
+  - name: Update .bashrc
+    blockinfile:
+      dest: "{{ ansible_env.HOME }}/.bashrc"
+      block: |
+          source $GOPATH/src/github.com/tomnomnom/gf/gf-completion.bash       
+      marker: '# {mark} GF MANAGED BLOCK - RECONMORE_GF_INSTALL'
+      insertbefore: EOF
+      create: yes 
+
+  - name: Update .zshrc
+    blockinfile:
+      dest: "{{ ansible_env.HOME }}/.zshrc"
+      block: |
+          source $GOPATH/src/github.com/tomnomnom/gf/gf-completion.bash       
+      marker: '# {mark} GF MANAGED BLOCK - RECONMORE_GF_INSTALL'
+      insertbefore: EOF
+      create: yes 
+ # - name: GF
+ #   shell: mkdir -p ~/.gf && cp -r /root/go/src/github.com/tomnomnom/gf/examples ~/.gf
+
+  - name: Clone GF-Patterns
+    ansible.builtin.git:
+      repo: https://github.com/1ndianl33t/Gf-Patterns
+      dest: /tmp/gf/
+  
+  - name: mkdir .gf
+    shell: mkdir ~/.gf/
+  
+  - name: copy to dst
+    shell: mv /tmp/gf/*.json ~/.gf
